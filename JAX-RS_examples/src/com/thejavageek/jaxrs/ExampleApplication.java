@@ -28,6 +28,7 @@ public class ExampleApplication extends Application {
 	  resources.add(GsonJsonProvider.class);
 	  resources.add(HelloWorldService.class);
 	  resources.add(convertMD5.class);
+	  resources.add(entityManagerUtils.class);
 //	  resources.add(Student.class);
 	  return resources;
 	 }

@@ -1,44 +1,63 @@
 package com.thejavageek.jaxrs;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 
-public class Student {
+@Entity
+@Table(name = "users")
+public class User {
 
+//	@TableGenerator(name = "users_gen", table = "id_users", pkColumnName = "gen_name", valueColumnName = "gen_val",
+//			allocationSize = 1, pkColumnValue = "users,gen")
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO )
+	private int id;
 
-	private String name;
-	private String surname;
-	private int age;
+	@Column(name = "username")
+	private String username;
+	@Column(name = "password")
+	private String password;
+	@Column(name = "email")
+	private String email;
 	
-	public Student(String n,String s ,int a){
-		this.name=n;
-		this.surname=s;
-		this.age=a;
+	public User(String n,String s ,String a){
+		this.username=n;
+		this.password=s;
+		this.email=a;
 	}
-	public Student(){
+	public User(){
 		super();
 	}
 
-	public String getSurname() {
-		return surname;
+	public int getId() {
+		return id;
 	}
-
-	public void setSurname(String surname) {
-		this.surname = surname;
+	public void setId(int id) {
+		this.id = id;
 	}
-
-	public String getName() {
-		return name;
+	public String getUsername() {
+		return username;
 	}
-
 	public void setName(String name) {
-		this.name = name;
+		this.username = name;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
-	public int getAge() {
-		return age;
-	}
 
-	public void setAge(int age) {
-		this.age = age;
-	}
 }
