@@ -16,7 +16,8 @@ public class User {
 //			allocationSize = 1, pkColumnValue = "users,gen")
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO )
-	private int id;
+	@Column(name= "idU")
+	private int idU;
 
 	@Column(name = "username")
 	private String username;
@@ -35,10 +36,10 @@ public class User {
 	}
 
 	public int getId() {
-		return id;
+		return idU;
 	}
 	public void setId(int id) {
-		this.id = id;
+		this.idU = id;
 	}
 	public String getUsername() {
 		return username;
