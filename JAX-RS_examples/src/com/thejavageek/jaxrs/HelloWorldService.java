@@ -120,11 +120,13 @@ public class HelloWorldService {
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
 		String usernameFind = u.getUsername();
+
 		boolean findOK=false;
 		em.getTransaction().begin();
 		List<User> result = em.createQuery( " from User", User.class ).getResultList();
 		for (int i=0;i<result.size();i++){
-			if (result.get(i).getUsername()==usernameFind)
+
+			if (result.get(i).getUsername().equals(usernameFind))
 				findOK=true;
 		}
 		//User check = em.find(User.class, u.getUsername());
