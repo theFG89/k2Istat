@@ -51,15 +51,15 @@ public class HelloWorldService {
 //		String password = s.getPassword();
 //		String email = s.getEmail();
 
-		///*******		CONNESSIONE DATABASE    	*****//////
 
-
+		System.out.println("prima di inizializzazione entitymanager OK");
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 
 		EntityManager em = emf.createEntityManager();
 		
-		
+		System.out.println("dopo di inizializzazione entitymanager OK");
 		em.getTransaction().begin();
+		
 		List<User> result = em.createQuery( " from users", User.class ).getResultList();
 		
 		for ( User event : result ) {
@@ -67,7 +67,8 @@ public class HelloWorldService {
 		}
 		em.getTransaction().commit();
 		em.close();
-
+		
+		System.out.println("dopo stammpa elementi OK");
 
 		//	connect();
 
