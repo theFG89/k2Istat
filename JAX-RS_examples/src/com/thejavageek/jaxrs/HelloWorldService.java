@@ -2,8 +2,6 @@ package com.thejavageek.jaxrs;
 
 
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -118,20 +116,29 @@ public class HelloWorldService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_HTML)
 	public String registerUser(User u){
-		User check;
+
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
-		System.out.println("dopo di inizializzazione entitymanager OK");
+		String usernameFind = u.getUsername();
+		boolean findOK=false;
 		em.getTransaction().begin();
-		System.out.println(u.getId()+" "+u.getUsername()+" "+ u.getPassword()+" "+u.getEmail());
-		check = em.find(User.class, u.getId());
-		if(check!=null)
+		List<User> result = em.createQuery( " from User", User.class ).getResultList();
+		for (int i=0;i<result.size();i++){
+			if (result.get(i).getUsername()==usernameFind)
+				findOK=true;
+		}
+		//User check = em.find(User.class, u.getUsername());
+		//if(check!=null){
+		if(findOK==true)
 			return "Utente già registrato";
-		em.persist(u);
+		//}
+		em.persist(u);	
 		em.getTransaction().commit();
 		em.close();		
-		return "Nuovo Utente inserito";
+			return "Nuovo Utente inserito";
 	}
+	
+	
 
 	@GET
 	@Produces("text/html") 

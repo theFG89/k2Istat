@@ -15,10 +15,9 @@ public class User {
 //	@TableGenerator(name = "users_gen", table = "id_users", pkColumnName = "gen_name", valueColumnName = "gen_val",
 //			allocationSize = 1, pkColumnValue = "users,gen")
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO )
+	@GeneratedValue(strategy = GenerationType.IDENTITY )
 	@Column(name= "idU")
 	private int idU;
-
 	@Column(name = "username")
 	private String username;
 	@Column(name = "password")
