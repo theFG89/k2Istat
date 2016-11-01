@@ -102,61 +102,46 @@ public class HelloWorldService {
 
 	}
 
+	@GET			////////////////DA COMPLETARE  /////////////////
+	@Path("/searchUser")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.TEXT_PLAIN)
+	public ResponseBuilder checkUser(User u){	
+		return Response.status(200);
+	}/////////////////////////////////////////////////////////////////
 
 
-	//		*****************		NEW USER	******************
 	@POST
 	@Path("/newUser")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ResponseRequest registerUser(User u){
-		ResponseRequest Response = new ResponseRequest();
+	@Produces(MediaType.TEXT_HTML)
+	public String registerUser(User u){
+
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
-		EntityManager em = emf.createEntityManager(); 
+		EntityManager em = emf.createEntityManager();
+		String usernameFind = u.getUsername();
+
+		boolean findOK=false;
 		em.getTransaction().begin();
 		List<User> result = em.createQuery( " from User", User.class ).getResultList();
 		for (int i=0;i<result.size();i++){
 
-
-			if (result.get(i).getUsername().equals(u.getUsername()) || result.get(i).getEmail().equals(u.getEmail())){
-				Response.setDescription("Utente già registrato");
-				return Response;
-			}
+			if (result.get(i).getUsername().equals(usernameFind))
+				findOK=true;
 		}
-		u.setPassword(convertMD5.encrypt(u.getPassword()));
+		//User check = em.find(User.class, u.getUsername());
+		//if(check!=null){
+		if(findOK==true)
+			return "Utente già registrato";
+		//}
 		em.persist(u);	
 		em.getTransaction().commit();
 		em.close();		
-		Response.setDescription("Utente registrato");
-		return Response;
-	}
-	//		*****************		LOGIN  WITHOUT PROTOCOL OAUTH2	******************
-	@POST
-	@Path("/login")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public ResponseRequest login(User u){
-		u.setPassword(convertMD5.encrypt(u.getPassword()));
-		ResponseRequest responseLogin= new ResponseRequest();
-		EntityManagerFactory  emf = entityManagerUtils.getInstance();
-		EntityManager em = emf.createEntityManager(); 
-		em.getTransaction().begin();
-		List<User> result = em.createQuery( " from User", User.class ).getResultList();
-		for (int i=0;i<result.size();i++){
-
-
-			if (result.get(i).getUsername().equals(u.getUsername()) && result.get(i).getPassword().equals(u.getPassword())){
-				responseLogin.setDescription("Login riuscito");
-				return responseLogin;
-			}
-		}		
-		
-		responseLogin.setDescription("Login errato");
-		return responseLogin;
+			return "Nuovo Utente inserito";
 	}
 	
 	
-	//*****************    CONVERT TO MD5  (  NOT NECESSARY)   ***********************		
+
 	@GET
 	@Produces("text/html") 
 	@Path("/convertToMD5")
