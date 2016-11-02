@@ -29,7 +29,7 @@ public class ExampleApplication extends Application {
 	  resources.add(HelloWorldService.class);
 	  resources.add(convertMD5.class);
 	  resources.add(entityManagerUtils.class);
-//	  resources.add(Student.class);
+	  resources.add(token.class);
 	  return resources;
 	 }
 }

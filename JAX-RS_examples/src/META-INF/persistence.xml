@@ -7,6 +7,7 @@
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<jta-data-source>java:/MySqlDS</jta-data-source>
 		<class>com.thejavageek.jaxrs.User</class>
+		<class>com.thejavageek.jaxrs.token</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 	</persistence-unit>
 </persistence>
