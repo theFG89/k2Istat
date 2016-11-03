@@ -2,16 +2,19 @@ package com.thejavageek.jaxrs;
 
 
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.oltu.oauth2.as.issuer.MD5Generator;
@@ -30,7 +33,10 @@ public class HelloWorldService {
 	@GET
 	@Path("/getusers")
 	@Produces (MediaType.APPLICATION_JSON)
-	public Response  getUser(){
+	public Response  getUser( @Context HttpServletResponse servletResponse){
+
+		
+		servletResponse.setHeader("Access-Control-Allow-Origin", "*");		//IP matteo
 
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
@@ -54,12 +60,20 @@ public class HelloWorldService {
 	
 	
 	
-	///// ************ 	  NEW USER		***************	
+						///// ************ 	  NEW USER		***************	
 	@POST
 	@Path("/newUser")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public ResponseRequest registerUser(User u){
+	public Response registerUser(User u, @Context HttpServletResponse servletResponse){
+		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
+		
+		servletResponse.setHeader("Access-Control-Allow-Methods","POST, GET, OPTIONS, PUT");
+		
+		
+		System.out.println(u.getUsername());
+		System.out.println(u.getPassword());
+		System.out.println(u.getEmail());
 		ResponseRequest ResponseQuery = new ResponseRequest(); 
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
@@ -67,7 +81,7 @@ public class HelloWorldService {
 			ResponseQuery.setSuccess(false);
 			ResponseQuery.setCode(400);
 			ResponseQuery.setDescription("Uno o più campi vuoti");
-			return ResponseQuery;
+			return Response.status(200).entity(ResponseQuery).build();
 		}
 		em.getTransaction().begin();
 		List<User> result = em.createQuery( " from User", User.class ).getResultList();
@@ -79,7 +93,7 @@ public class HelloWorldService {
 				ResponseQuery.setDescription("Utente già registrato");
 				em.getTransaction().commit();
 				em.close();	
-				return ResponseQuery;
+				return Response.status(200).entity(ResponseQuery).build();
 			}
 		}
 		u.setPassword(convertMD5.encrypt(u.getPassword()));
@@ -89,18 +103,21 @@ public class HelloWorldService {
 		ResponseQuery.setSuccess(true);
 		ResponseQuery.setCode(200);
 		ResponseQuery.setDescription("Utente registrato");
-		return ResponseQuery;
+		return Response.status(200).entity(ResponseQuery).build();
 	}
 
 	@POST
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response login(User u) throws OAuthSystemException {
+	public Response login(User u, @Context HttpServletResponse servletResponse) throws OAuthSystemException {
 		//initialization variables
+		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
+        
 		ResponseRequest ResponseQuery = new ResponseRequest();
 		token tokenResponse = new token();
 		boolean find = false;
+		boolean expired=false;
 		u.setPassword(convertMD5.encrypt(u.getPassword()));
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
@@ -112,19 +129,19 @@ public class HelloWorldService {
 
 			if (result.get(i).getUsername().equals(u.getUsername()) && result.get(i).getPassword().equals(u.getPassword())){
 				tokenResponse = searchToken(result.get(i).getId());
-				//if (tokenResponse.getAssignedToken().length()!=0){
-				if(tokenResponse!=null){
-					em.getTransaction().commit();
-					em.close();
-					return Response.status(200).entity(tokenResponse).build();	
-				}
-				else{	
-				find=true;		/// user found in table users
-				tokenResponse  = new token();
-				tokenResponse.setIdUser(result.get(i).getId());
-				tokenResponse.setDateCreate(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
-				tokenResponse.setDateExpired(getDataExpired());
-				}
+				if((expired=checkTokenExpired(result.get(i).getId()))==false && tokenResponse!=null)		// if token isn't expired and isn't null
+				{									
+						em.getTransaction().commit();
+						em.close();
+						return Response.status(200).entity(tokenResponse).build();	
+					}
+					else{	
+						find=true;		/// user found in table users
+						tokenResponse  = new token();
+						tokenResponse.setIdUser(result.get(i).getId());
+						tokenResponse.setDateCreate(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+						tokenResponse.setDateExpired(getDataExpired());
+					}
 			} 	
 		}
 		if(find==true){
@@ -132,10 +149,15 @@ public class HelloWorldService {
 			OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
 			final String accessToken = oauthIssuerImpl.accessToken();
 			tokenResponse.setAssignedToken(accessToken);
-			em.persist(tokenResponse);	
+			if(expired==false){
+				em.persist(tokenResponse);
+			}
+			else{
+				em.merge(tokenResponse);	
+				
+			}
 			em.getTransaction().commit();
 			em.close();
-
 			return Response.status(200).entity(tokenResponse).build();		
 		}else{
 			ResponseQuery.setSuccess(false);
@@ -145,12 +167,40 @@ public class HelloWorldService {
 		}
 	}
 
+	private boolean checkTokenExpired(int id) {
+		// inizialization variables
+		EntityManagerFactory  emf = entityManagerUtils.getInstance();
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		//find entity with id 
+		token outputToken = em.find(token.class, id);
+		if(outputToken!=null){
+		DateFormat df = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+		String expiredData = outputToken.getDateExpired().toString();
+		String nowData = df.format(new Date()); 
+		em.getTransaction().commit();
+		em.close();
+		if(nowData.compareTo(expiredData)>0)  //if  nowData after expiredData  then token Expired
+		{
+			System.out.println("Data token scaduta");
+			return true;
+		}
+		else{
+			System.out.println("Data token non scaduta");
+			return false;
+			}
+		}
+		else{
+			System.out.println("token vuoto");
+			return false;
+		}
+	}
+
 	private token searchToken(int id) {
 		token outputToken  = new token();
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
-		//List<token> result = em.createQuery( " from user_token", token.class ).getResultList();
 		outputToken = em.find(token.class, id);
 		em.getTransaction().commit();
 		em.close();
