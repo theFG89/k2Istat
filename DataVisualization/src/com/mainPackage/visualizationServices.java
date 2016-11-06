@@ -95,7 +95,6 @@ public class visualizationServices {
 
 		ResponseInfo ResponseQuery = new ResponseInfo();
 		Token tokenResponse = new Token();
-		boolean find = false;	
 		boolean expired=false;
 		u.setPassword(convertMD5.encrypt(u.getPassword()));
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
@@ -115,45 +114,42 @@ public class visualizationServices {
 					return Response.status(200).entity(tokenResponse).build();	
 				}
 				else{	
-					find=true;		/// user found in table users
 					tokenResponse  = new Token();
 					tokenResponse.setIdUser(result.get(i).getId());
 					tokenResponse.setDateCreate(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
 					tokenResponse.setDateExpired(getDataExpired());
+					OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
+					final String accessToken = oauthIssuerImpl.accessToken();
+					
+					tokenResponse.setAssignedToken(accessToken);
+					if(expired==false)
+						em.persist(tokenResponse);
+					else
+						em.merge(tokenResponse);	
+
+					em.getTransaction().commit();
+					em.close();
+					return Response.status(200).entity(tokenResponse).build();	
 				}
 			} 	
 		}
-		if(find==true){
 
-			OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
-			final String accessToken = oauthIssuerImpl.accessToken();
-			tokenResponse.setAssignedToken(accessToken);
-			if(expired==false)
-				em.persist(tokenResponse);
-			else
-				em.merge(tokenResponse);	
-
-			em.getTransaction().commit();
-			em.close();
-			return Response.status(200).entity(tokenResponse).build();		
-		}else{
 			ResponseQuery = returnResponse(false, 400, "Utente non trovato");
 			return Response.status(200).entity(ResponseQuery).build();	
 		}
-	}
-	
+
 	////////*******		  GET VALUES OF NATION	*********
 	@Path("/getValueNation")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response dataNation(RequestClient RC ){
-		
-		
-		
+
+
+
 		return Response.status(200).build();
 	}
-	
-	
+
+
 	///////**********		METHOD CHECK TOKEN 	DATA EXPIRED	************
 	private boolean checkTokenExpired(int id) {
 		// inizialization variables
@@ -163,27 +159,15 @@ public class visualizationServices {
 		//find entity with id 
 		Token outputToken = em.find(Token.class, id);
 		if(outputToken!=null){
-			DateFormat df = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-			String expiredData = outputToken.getDateExpired().toString();
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String nowData = df.format(new Date()); 
-			System.out.println(nowData);
-			System.out.println(expiredData);
-			em.getTransaction().commit();
+			em.getTransaction().commit();		///CHIEDERE AD AMIR 
 			em.close();
-			if(nowData.compareTo(expiredData)<0)  //if  nowData after expiredData  then token Expired
-			{
-				System.out.println("Data token scaduta");
-				return true;
-			}
-			else{
-				System.out.println("Data token non scaduta");
-				return false;
-			}
+			if(nowData.compareTo(outputToken.getDateExpired())>0)  //if  nowData after expiredData  then token Expired				
+				return true;			
 		}
-		else{
-			System.out.println("token vuoto");
-			return false;
-		}
+
+		return false;
 	}
 	//////////**********	METHOD SEARCH TOKEN INTO DB	***********
 	private Token searchToken(int id) {
@@ -202,7 +186,7 @@ public class visualizationServices {
 		Date dt = new Date();
 		DateTime dtOrg = new DateTime(dt);
 		DateTime dtPlusOne = dtOrg.plusDays(1);
-		String dataExpired = dtPlusOne.toString("yyyy.MM.dd.HH.mm.ss");
+		String dataExpired = dtPlusOne.toString("yyyy-MM-dd HH:mm:ss");
 		return dataExpired;
 	}
 
