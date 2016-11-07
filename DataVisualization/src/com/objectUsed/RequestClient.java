@@ -2,28 +2,38 @@ package com.objectUsed;
 
 public class RequestClient {
 
-	private String code;
-	private String filter;
+	private String codeNation;
+	private String codeRegion;
+	private String codeArea;
 	
 	public RequestClient(){
 		
 	}
 
-	public String getCode() {
-		return code;
+	public String getCodeNation() {
+		return codeNation;
 	}
 
-	public void setCode(String code) {
-		this.code = code;
+	public void setCodeNation(String codeNation) {
+		this.codeNation = codeNation;
 	}
 
-	public String getFilter() {
-		return filter;
+	public String getCodeRegion() {
+		return codeRegion;
 	}
 
-	public void setFilter(String filter) {
-		this.filter = filter;
+	public void setCodeRegion(String codeRegion) {
+		this.codeRegion = codeRegion;
 	}
-	
+
+	public String getCodeArea() {
+		return codeArea;
+	}
+
+	public void setCodeArea(String codeArea) {
+		this.codeArea = codeArea;
+	}
+
+
 	
 }

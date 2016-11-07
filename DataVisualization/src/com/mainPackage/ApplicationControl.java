@@ -19,8 +19,9 @@ import javax.ws.rs.core.Application;
 
 		  //register REST modules
 
-		  resources.add(visualizationServices.class);
+		  resources.add(AccessServices.class);
 		  resources.add(com.utils.entityManagerUtils.class);
+		  resources.add(DataServices.class);
 		  return resources;
 		 }
 	}

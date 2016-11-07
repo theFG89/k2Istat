@@ -7,13 +7,11 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -30,17 +28,15 @@ import com.objectUsed.User;
 import com.utils.convertMD5;
 import com.utils.entityManagerUtils;
 
-@Path("/data")
-public class visualizationServices {
+@Path("/access")
+public class AccessServices {
 	//TESTING  DOWNLOAD UTENTI DA DB  E cavallo di troia
 
 	@GET
 	@Path("/getusers")
 	@Produces (MediaType.APPLICATION_JSON)
-	public Response  getUser( @Context HttpServletResponse servletResponse){
-
-
-		servletResponse.setHeader("Access-Control-Allow-Origin", "*");		
+	public Response  getUser(){
+		
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
@@ -55,8 +51,7 @@ public class visualizationServices {
 	@Path("/newUser")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response registerUser(User u, @Context HttpServletResponse servletResponse){
-		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
+	public Response registerUser(User u){
 
 		ResponseInfo ResponseQuery = new ResponseInfo(); 
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
@@ -88,10 +83,9 @@ public class visualizationServices {
 	@Path("/login")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response login(User u, @Context HttpServletResponse servletResponse) throws OAuthSystemException {
+	public Response login(User u) throws OAuthSystemException {
 		//initialization variables
-		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
-		servletResponse.setHeader("Access-Control-Allow-Headers", "*");
+
 
 		ResponseInfo ResponseQuery = new ResponseInfo();
 		Token tokenResponse = new Token();
@@ -137,17 +131,6 @@ public class visualizationServices {
 			ResponseQuery = returnResponse(false, 400, "Utente non trovato");
 			return Response.status(200).entity(ResponseQuery).build();	
 		}
-
-	////////*******		  GET VALUES OF NATION	*********
-	@Path("/getValueNation")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response dataNation(RequestClient RC ){
-
-
-
-		return Response.status(200).build();
-	}
 
 
 	///////**********		METHOD CHECK TOKEN 	DATA EXPIRED	************
