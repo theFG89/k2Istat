@@ -75,7 +75,6 @@ public class HelloWorldService {
 	public Response registerUser(User u, @Context HttpServletResponse servletResponse){
 		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
 		
-		servletResponse.setHeader("Access-Control-Allow-Methods","POST, GET, OPTIONS, PUT");
 		
 		
 		System.out.println(u.getUsername());
@@ -121,6 +120,8 @@ public class HelloWorldService {
 	public Response login(User u, @Context HttpServletResponse servletResponse) throws OAuthSystemException {
 		//initialization variables
 		servletResponse.setHeader("Access-Control-Allow-Origin", "*");
+		servletResponse.setHeader("Access-Control-Allow-Headers", "*");
+		servletResponse.setHeader("Access-Control-Allow-Methods", "*");
         
 		ResponseRequest ResponseQuery = new ResponseRequest();
 		token tokenResponse = new token();
@@ -199,9 +200,11 @@ public class HelloWorldService {
 		DateFormat df = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
 		String expiredData = outputToken.getDateExpired().toString();
 		String nowData = df.format(new Date()); 
+		System.out.println(nowData);
+		System.out.println(expiredData);
 		em.getTransaction().commit();
 		em.close();
-		if(nowData.compareTo(expiredData)>0)  //if  nowData after expiredData  then token Expired
+		if(nowData.compareTo(expiredData)<0)  //if  nowData after expiredData  then token Expired
 		{
 			System.out.println("Data token scaduta");
 			return true;
