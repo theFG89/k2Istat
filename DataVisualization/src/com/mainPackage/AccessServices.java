@@ -57,7 +57,7 @@ public class AccessServices {
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
 		if ((u.getUsername().trim().length()==0) || (u.getPassword().trim().length()==0) || (u.getEmail().trim().length()==0) ){
-			ResponseQuery = returnResponse(false, 400, "Uno o più campi vuoti");
+			ResponseQuery = returnResponse(false, 400, "Uno o piu' campi vuoti");
 			return Response.status(200).entity(ResponseQuery).build();
 		}
 		em.getTransaction().begin();
@@ -65,7 +65,7 @@ public class AccessServices {
 		for (int i=0;i<result.size();i++){
 
 			if (result.get(i).getUsername().equals(u.getUsername()) || result.get(i).getEmail().equals(u.getEmail())){
-				ResponseQuery = returnResponse(false, 400, "Utente già registrato");
+				ResponseQuery = returnResponse(false, 400, "Utente gia' registrato");
 				em.getTransaction().commit();
 				em.close();	
 				return Response.status(200).entity(ResponseQuery).build();
@@ -128,7 +128,7 @@ public class AccessServices {
 			} 	
 		}
 
-			ResponseQuery = returnResponse(false, 400, "Utente non trovato");
+			ResponseQuery = returnResponse(false, 400, "Errore Password o Utente non trovato");
 			return Response.status(200).entity(ResponseQuery).build();	
 		}
 
