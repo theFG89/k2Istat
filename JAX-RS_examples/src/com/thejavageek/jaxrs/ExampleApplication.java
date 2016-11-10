@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+import com.alzHBase.TestHBase;
+
  
 @ApplicationPath("/rest")
 public class ExampleApplication extends Application {
@@ -28,6 +30,7 @@ public class ExampleApplication extends Application {
 	  resources.add(GsonJsonProvider.class);
 	  resources.add(HelloWorldService.class);
 	  resources.add(convertMD5.class);
+	  resources.add(TestHBase.class);
 	  resources.add(entityManagerUtils.class);
 	  resources.add(token.class);
 	  return resources;

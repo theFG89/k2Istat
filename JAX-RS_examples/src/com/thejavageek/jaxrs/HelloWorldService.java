@@ -4,8 +4,13 @@ package com.thejavageek.jaxrs;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +28,8 @@ import org.apache.oltu.oauth2.as.issuer.OAuthIssuerImpl;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.joda.time.DateTime;
 
+import com.alzHBase.RowC;
+import com.alzHBase.TestHBase;
 import com.google.gson.Gson;
 
 @Path("/HelloWorld")
@@ -79,7 +86,7 @@ public class HelloWorldService {
 		if ((u.getUsername().length()<2) || (u.getPassword().length()<2) || (u.getEmail().length()<2) ){
 			ResponseQuery.setSuccess(false);
 			ResponseQuery.setCode(400);
-			ResponseQuery.setDescription("Uno o più campi vuoti");
+			ResponseQuery.setDescription("Uno o piï¿½ campi vuoti");
 			return Response.status(200).entity(ResponseQuery).build();
 		}
 		em.getTransaction().begin();
@@ -89,7 +96,7 @@ public class HelloWorldService {
 			if (result.get(i).getUsername().equals(u.getUsername()) || result.get(i).getEmail().equals(u.getEmail())){
 				ResponseQuery.setSuccess(false);
 				ResponseQuery.setCode(400);
-				ResponseQuery.setDescription("Utente già registrato");
+				ResponseQuery.setDescription("Utente giï¿½ registrato");
 				em.getTransaction().commit();
 				em.close();	
 				return Response.status(200).entity(ResponseQuery).build();
@@ -104,6 +111,7 @@ public class HelloWorldService {
 		ResponseQuery.setDescription("Utente registrato");
 		return Response.status(200).entity(ResponseQuery).build();
 	}
+	
 
 	@POST
 	@Path("/login")
@@ -167,6 +175,19 @@ public class HelloWorldService {
 			return Response.status(200).entity(ResponseQuery).build();	
 		}
 	}
+	
+	@GET
+	@Path("/getData")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response mainView(){
+		Map<String,ArrayList<RowC>> dati = new HashMap<String,ArrayList<RowC>>();	
+		TestHBase result = new TestHBase();
+		dati = result.getAllRecord("dati_demenza");
+		Iterator it = dati.entrySet().iterator();
+	
+		return Response.status(200).entity(dati).build();
+	}
+	
 
 	private boolean checkTokenExpired(int id) {
 		// inizialization variables

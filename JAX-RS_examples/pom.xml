@@ -7,6 +7,11 @@
 	<packaging>war</packaging>
 	<dependencies>
 		<dependency>
+			<groupId>HBaseAPIalz</groupId>
+			<artifactId>HBaseAPIalz</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.9.4</version>
