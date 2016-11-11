@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 
 import com.alzHBase.Area;
 import com.alzHBase.GetDataMapArea;
+import com.alzHBase.GetDataMapRegion;
 import com.objectUsed.RequestClient;
 import com.objectUsed.RequestClientCode;
 import com.objectUsed.ResponseInfo;
@@ -41,6 +42,27 @@ public class DataServices {
 			
 		 }
 		}
+	@POST
+	@Path("/getValueRegion")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response dataRegion(RequestClientCode RC ){
+		String search = RC.getCode();
+		if (search.length()!=0){
+		Map<String,Area> data = new LinkedHashMap<String,Area>();
+		data = GetDataMapRegion.getRegion(search);
+		return Response.status(200).entity(data).build();
+		}
+		else{
+			ResponseInfo response = new ResponseInfo();
+			response.setCode(400);
+			response.setSuccess(false);
+			response.setDescription("Richiesta errata");
+			return Response.status(200).entity(response).build();
+			
+		 }
+		}
+	
 }
 
 
