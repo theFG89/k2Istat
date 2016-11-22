@@ -6,11 +6,12 @@
 	<version>0.0.1</version>
 	<packaging>war</packaging>
 	<dependencies>
-		<dependency>
-			<groupId>HBaseAPIalz</groupId>
-			<artifactId>HBaseAPIalz</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>HBaseAPIalz</groupId> -->
+		<!-- <artifactId>HBaseAPIalz</artifactId> -->
+		<!-- <version>0.0.1-SNAPSHOT</version> -->
+		<!-- </dependency> -->
+
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>

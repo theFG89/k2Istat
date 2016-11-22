@@ -2,7 +2,6 @@ package com.mainPackage;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -16,9 +15,9 @@ import com.alzHBase.AreaRegion;
 import com.alzHBase.GetDataMapArea;
 import com.alzHBase.GetDataMapNation;
 import com.alzHBase.GetDataMapRegion;
-import com.objectUsed.RequestClient;
 import com.objectUsed.RequestClientCode;
 import com.objectUsed.ResponseInfo;
+
 
 @Path("/data")
 public class DataServices {
@@ -68,7 +67,6 @@ public class DataServices {
 		}
 	
 	/////*************		GET VALUE NATION		**************
-	////////*******		  GET VALUES OF NATION	*********
 	
 	@POST
 	@Path("/getValueNation")
@@ -90,6 +88,7 @@ public class DataServices {
 			
 		 }
 		}
+
 	
 }
 

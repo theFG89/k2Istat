@@ -22,12 +22,29 @@ public class User {
 	private String password;
 	@Column(name = "email")
 	private String email;
+	@Column(name="passwordStatus")
+	private String passwordStatus;
+	@Column(name = "activationStatus")
+	private String activationStatus;
+	@Column(name="restoreExpired")
+	private String restoreExpired;
 	
-	public User(String n,String s ,String a){
-		this.username=n;
-		this.password=s;
-		this.email=a;
+	
+
+
+
+	public User(int idU, String username, String password, String email, String passwordStatus, String activationStatus,
+			String restoreExpired) {
+		super();
+		this.idU = idU;
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		this.passwordStatus = passwordStatus;
+		this.activationStatus = activationStatus;
+		this.restoreExpired = restoreExpired;
 	}
+
 	public User(){
 		super();
 	}
@@ -57,5 +74,30 @@ public class User {
 		this.email = email;
 	}
 
+	public String getPasswordStatus() {
+		return passwordStatus;
+	}
+
+	public void setPasswordStatus(String passwordStatus) {
+		this.passwordStatus = passwordStatus;
+	}
+
+	public String getActivationStatus() {
+		return activationStatus;
+	}
+
+	public void setActivationStatus(String activationStatus) {
+		this.activationStatus = activationStatus;
+	}
+
+	public String getRestoreExpired() {
+		return restoreExpired;
+	}
+
+	public void setRestoreExpired(String restoreExpired) {
+		this.restoreExpired = restoreExpired;
+	}
+
+	
 
 }
