@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 
 @Entity
@@ -28,13 +29,15 @@ public class User {
 	private String activationStatus;
 	@Column(name="restoreExpired")
 	private String restoreExpired;
-	
-	
+	@Transient
+	private String passwordConfirm;
+	@Transient
+	private String emailConfirm;
 
 
 
 	public User(int idU, String username, String password, String email, String passwordStatus, String activationStatus,
-			String restoreExpired) {
+			String restoreExpired,String pc, String ec) {
 		super();
 		this.idU = idU;
 		this.username = username;
@@ -43,7 +46,19 @@ public class User {
 		this.passwordStatus = passwordStatus;
 		this.activationStatus = activationStatus;
 		this.restoreExpired = restoreExpired;
+		this.passwordConfirm = pc;
+		this.emailConfirm = ec;
 	}
+	@Transient
+	public String getPasswordConfirm() {
+		return passwordConfirm;
+	}
+
+	@Transient
+	public String getEmailConfirm() {
+		return emailConfirm;
+	}
+
 
 	public User(){
 		super();

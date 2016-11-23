@@ -5,8 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
-
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -84,13 +82,13 @@ public class AccessServices {
 			OAuthIssuer oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());	///CREATING RANDOM VALUE TOKEN FOR ACTIVATION
 			u.setActivationStatus(oauthIssuerImpl.accessToken());
 			u.setPasswordStatus("1");
-			sendMail(u.getEmail(), 
-					"Benvenuto "+u.getUsername()+",<br><br>"+
-							"la registrazione è andata a buon fine, di seguito sono riportati i dati di accesso, conservali con cura: <br><br>"+
-							"Username: <b>"+u.getUsername()+"</b><br>"+
-							"Password: <b>"+u.getPassword()+"</b><br><br><br>"+
-							"Cordialmente,<br><br>"+
-							"Dementiae Exploration  Staff<br><br>");
+			String bodyMessage ="Benvenuto "+u.getUsername()+",<br><br>"+
+								"la registrazione è quasi completata. Per attivare l'account cliccare sul seguente link: <br><br>"+
+								//"<a href ='http://www.google.it'>clicca qui</a>"+
+								"<a href='http://192.168.0.181/www/DE/web/views/#/attivazioneAccount/"+u.getEmail()+"/"+u.getActivationStatus()+"'>http://www.dementiaeexploration/activation.html</a><br><br>"+
+								"Cordialmente,<br><br>"+
+								"Dementiae Exploration  Staff<br><br>"; 
+			sendMail(u.getEmail(),bodyMessage);
 		} catch (AddressException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -102,7 +100,7 @@ public class AccessServices {
 		em.persist(u);	
 		em.getTransaction().commit();
 		em.close();
-		ResponseQuery = returnResponse(true,200,"Registrazione avvenuta!Le credenziali di accesso inserite ti sono state inviate via e-mail ");
+		ResponseQuery = returnResponse(true,200,"Registrazione avvenuta!Per attivare l'account seguire le istruzioni contenute nella e-mail");
 		return Response.status(200).entity(ResponseQuery).build();
 	}
 	/////// *******  METHOD LOGIN   ***************
@@ -125,8 +123,12 @@ public class AccessServices {
 
 		List<User> result = em.createQuery( " from User", User.class ).getResultList();
 		for (int i=0;i<result.size();i++){
-
+			
 			if (result.get(i).getUsername().equals(u.getUsername()) && result.get(i).getPassword().equals(u.getPassword())){
+				if(!result.get(i).getActivationStatus().equals("1")){
+					ResponseQuery = returnResponse(false, 400, "Account non ancora attivo, controllare l'e-mail e seguire le indicazioni riportate");
+					return Response.status(200).entity(ResponseQuery).build();	
+				}
 				tokenResponse = searchToken(result.get(i).getId());
 				if((expired=checkTokenExpired(result.get(i).getId()))==false && tokenResponse!=null)		// if token isn't expired and isn't null
 				{									
@@ -204,7 +206,7 @@ public class AccessServices {
 		if(outputToken!=null){
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String nowData = df.format(new Date()); 
-			em.getTransaction().commit();		///CHIEDERE AD AMIR 
+			em.getTransaction().commit();	
 			em.close();
 			if(nowData.compareTo(outputToken.getDateExpired())>0)  //if  nowData after expiredData  then token Expired				
 				return true;	 		
@@ -242,53 +244,165 @@ public class AccessServices {
 		return R;
 	}
 	
+	///////**********		METHOD CHECK TOKEN PASSWORD DATA EXPIRED	************
+	private boolean checkTokenPasswordExpired(int id) {
+		// inizialization variables
+		EntityManagerFactory  emf = entityManagerUtils.getInstance();
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		//find entity with id 
+		User u= em.find(User.class, id);
+		if(u!=null){
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String nowData = df.format(new Date()); 
+			em.getTransaction().commit();		
+			em.close();
+			if(nowData.compareTo(u.getRestoreExpired())>0)  //if  nowData after expiredData  then token password expired			
+				return true;	 		
+		}
+
+		return false;
+	}
 	
 
-	//////*******		CHANGE PASSWORD		***********
+	//////*******		TOKEN PASSWORD VALIDATION		***********
 	@POST
-	@Path("/restorePassword")
+	@Path("/tokenPasswordValidation")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response tokenPasswordValidation(User u){
+		//token  e email
+		ResponseInfo responseInfo = new ResponseInfo();
+		EntityManagerFactory  emf = entityManagerUtils.getInstance();
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		List<User> result = em.createQuery( " from User", User.class ).getResultList();
+		for (int i=0;i<result.size();i++){
+			if (result.get(i).getEmail().equals(u.getEmail())) {
+				if(checkTokenPasswordExpired(result.get(i).getId())){
+					responseInfo = returnResponse(false, 401, "Token scaduto!Torna ad invio e-mail per recupero password!");
+					return Response.status(200).entity(responseInfo).build();
+				}
+				if(result.get(i).getPasswordStatus().equalsIgnoreCase(u.getPasswordStatus().trim()))
+				{
+					responseInfo = returnResponse(true, 200, "Token corrispondente!");
+					em.getTransaction().commit();		
+					em.close();
+					return Response.status(200).entity(responseInfo).build();
+				}
+				else{
+					responseInfo = returnResponse(false, 400, "Token errato!");
+					em.getTransaction().commit();		
+					em.close();
+					return Response.status(200).entity(responseInfo).build();
+				}
+			}	
+				
+		}
+		em.getTransaction().commit();		
+		em.close();
+		responseInfo = returnResponse(false, 400, "Utente non trovato");
+		return Response.status(200).entity(responseInfo).build();
+	}
+
+	//////*******		CHANGE PASSWORD 	***********
+	@POST
+	@Path("/changePassword")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response modifyPassword(User u){
-		
-
-		return Response.status(200).build();
+		ResponseInfo responseInfo = new ResponseInfo();
+		EntityManagerFactory  emf = entityManagerUtils.getInstance();
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		List<User> result = em.createQuery( " from User", User.class ).getResultList();
+		for (int i=0;i<result.size();i++){
+			if(result.get(i).getEmail().equals(u.getEmail())){
+				result.get(i).setPassword(ConvertUtils.encrypt(u.getPassword()));
+				result.get(i).setPasswordStatus("1");
+				result.get(i).setRestoreExpired(null);
+				em.merge(result.get(i));	
+				em.getTransaction().commit();
+				em.close();
+				responseInfo = returnResponse(true, 200, "Password modificata!");
+				return Response.status(200).entity(responseInfo).build();
+			}
+		}
+		em.getTransaction().commit();		
+		em.close();
+		responseInfo = returnResponse(false, 400, "Errore!E-mail utente non trovata");
+		return Response.status(200).entity(responseInfo).build();
 	}
-
+	
 	////******  METHOD SEND MAIL RESTORE******	
 	@POST
 	@Path("/sendMailRestore")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response sendForRestore(User u) throws MessagingException{
-		ResponseInfo responseInfo = new ResponseInfo();
+		ResponseInfo responseInfo;
 		EntityManagerFactory  emf = entityManagerUtils.getInstance();
 		EntityManager em = emf.createEntityManager();
 		em.getTransaction().begin();
 		//start
 		List<User> result = em.createQuery( " from User", User.class ).getResultList();
 		for (int i=0;i<result.size();i++){
-
+			if(!result.get(i).getActivationStatus().equals("1")){	
+				em.close();
+				responseInfo = returnResponse(true, 400, "Prima di poter utilizzare i servizi richiesti è necessario attivare l'account, controlla la tua casella di posta");
+				return Response.status(200).entity(responseInfo).build();	
+			}
 			if (result.get(i).getEmail().equals(u.getEmail())){
 				result.get(i).setPasswordStatus(ConvertUtils.generateRandomString());
 				result.get(i).setRestoreExpired(getDataExpired());
 				em.merge(result.get(i));	
-				em.getTransaction().commit();
-				em.close();
+				//em.getTransaction().commit();
 				String bodySend = "Gentile "+result.get(i).getUsername()+",<br><br>"+
 						"In seguito alla tua richiesta di recupero password, ti invitiamo a inserire il seguente codice nell'apposito riquadro:<br><br>"+
-						"<b>"+ConvertUtils.generateRandomString()+"</b><br>"+
+						"<b>"+result.get(i).getPasswordStatus()+"</b><br><br>"+
 						"Cordialmente,<br><br>"+
 						"Dementiae Exploration  Staff<br><br>";
 				sendMail(u.getEmail(), bodySend);				
-				returnResponse(true, 200, "Email inviata con successo, controllare la casella di posta elettronica");
+				responseInfo = returnResponse(true, 200, "Email inviata con successo, controllare la casella di posta elettronica");
+				em.getTransaction().commit();		
+				em.close();
 				return Response.status(200).entity(responseInfo).build();	
 			}
 		}
-		returnResponse(true, 400, "Utente non trovato, inserire di nuovo l'e-mail");
+		em.getTransaction().commit();		
+		em.close();
+		responseInfo = returnResponse(true, 400, "Utente non trovato, inserire di nuovo l'e-mail");
 		return Response.status(200).entity(responseInfo).build();		
 	}
 
+////******  METHOD ACTIVATION USER******	
+	@POST
+	@Path("/activation")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response activation(User u) {
+		ResponseInfo responseInfo = null;
+		EntityManagerFactory  emf = entityManagerUtils.getInstance();
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		
+		List<User> result = em.createQuery("from User",User.class ).getResultList();
+		for(int i=0;i<result.size();i++){
+			if (result.get(i).getEmail().equals(u.getEmail())){
+				if(result.get(i).getActivationStatus().equals(u.getActivationStatus())){
+					result.get(i).setActivationStatus("1");					
+					em.merge(result.get(i));
+					em.getTransaction().commit();
+					em.close();
+					responseInfo = returnResponse(true, 200, "Attivazione account completata");
+					return Response.status(200).entity(responseInfo).build();
+				}
+			}
+		}
+		responseInfo = returnResponse(false, 400, "Attivazione non riuscita");
+		return Response.status(200).entity(responseInfo).build();		
+	}
+	
 
 
 
