@@ -397,6 +397,11 @@ public class AccessServices {
 					responseInfo = returnResponse(true, 200, "Attivazione account completata");
 					return Response.status(200).entity(responseInfo).build();
 				}
+				if(result.get(i).getActivationStatus().equals("1")){
+					em.close();
+					responseInfo = returnResponse(false, 400, "Utente già attivo");
+					return Response.status(200).entity(responseInfo).build();
+				}
 			}
 		}
 		responseInfo = returnResponse(false, 400, "Attivazione non riuscita");
