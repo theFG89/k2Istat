@@ -126,6 +126,7 @@ public class AccessServices {
 			
 			if (result.get(i).getUsername().equals(u.getUsername()) && result.get(i).getPassword().equals(u.getPassword())){
 				if(!result.get(i).getActivationStatus().equals("1")){
+					em.close();
 					ResponseQuery = returnResponse(false, 400, "Account non ancora attivo, controllare l'e-mail e seguire le indicazioni riportate");
 					return Response.status(200).entity(ResponseQuery).build();	
 				}
